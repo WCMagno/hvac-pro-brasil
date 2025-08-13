@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 🚀 Welcome to Z.ai Code Scaffold
 
 A modern, production-ready web application scaffold powered by cutting-edge technologies, designed to accelerate your development with [Z.ai](https://chat.z.ai)'s AI-powered coding assistance.
@@ -139,3 +140,10 @@ This scaffold includes a comprehensive set of modern web development tools:
 ---
 
 Built with ❤️ for the developer community. Supercharged by [Z.ai](https://chat.z.ai) 🚀
+=======
+# hvac-pro-brasil
+Sistema de gerenciamento de manutenção HVAC para profissionais do Brasil
+git remote set-url origin https://WCMagno:SEU_TOKEN@github.com/WCMagno/hvac-pro-brasil.git
+git remote set-url origin git@github.com:WCMagno/hvac-pro-brasil.git
+git push -u origin main
+>>>>>>> a61ed6f8bde20fd60c996c5cb9ccd1df96186739
