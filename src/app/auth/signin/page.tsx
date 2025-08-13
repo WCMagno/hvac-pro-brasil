@@ -109,6 +109,17 @@ export default function SignIn() {
                 Cadastre-se
               </a>
             </p>
+            <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+              <p className="text-xs text-blue-800 font-medium">
+                Acesso Administrativo:
+              </p>
+              <p className="text-xs text-blue-600">
+                Email: admin@hvacpro.com.br
+              </p>
+              <p className="text-xs text-blue-600">
+                Senha: admin#1234
+              </p>
+            </div>
           </div>
         </CardContent>
       </Card>
