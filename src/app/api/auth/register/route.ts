@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import bcrypt from "bcryptjs"
-import { db } from "@/lib/db"
-import { UserRole } from "@prisma/client"
+import { createClient } from "@/lib/supabase"
+import { UserRole } from "@/types"
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,10 +18,14 @@ export async function POST(request: NextRequest) {
       specialty
     } = body
 
+    const supabase = createClient()
+
     // Check if user already exists
-    const existingUser = await db.user.findUnique({
-      where: { email }
-    })
+    const { data: existingUser, error: checkError } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', email)
+      .single()
 
     if (existingUser) {
       return NextResponse.json(
@@ -34,35 +38,51 @@ export async function POST(request: NextRequest) {
     const hashedPassword = await bcrypt.hash(password, 12)
 
     // Create user
-    const userData = {
-      name,
-      email,
-      password: hashedPassword,
-      phone,
-      role: role as UserRole
-    }
+    const { data: user, error: createError } = await supabase
+      .from('users')
+      .insert({
+        name,
+        email,
+        password_hash: hashedPassword,
+        phone,
+        role: role as UserRole
+      })
+      .select()
+      .single()
 
-    const user = await db.user.create({
-      data: userData
-    })
+    if (createError) {
+      console.error("Error creating user:", createError)
+      return NextResponse.json(
+        { error: "Erro ao criar usuário" },
+        { status: 500 }
+      )
+    }
 
     // Create role-specific profile
     if (role === "CLIENT") {
-      await db.client.create({
-        data: {
-          userId: user.id,
-          companyName,
+      const { error: clientError } = await supabase
+        .from('clients')
+        .insert({
+          user_id: user.id,
+          company_name: companyName,
           document
-        }
-      })
+        })
+
+      if (clientError) {
+        console.error("Error creating client profile:", clientError)
+      }
     } else if (role === "TECHNICIAN") {
-      await db.technician.create({
-        data: {
-          userId: user.id,
-          licenseNumber,
+      const { error: technicianError } = await supabase
+        .from('technicians')
+        .insert({
+          user_id: user.id,
+          license_number: licenseNumber,
           specialty
-        }
-      })
+        })
+
+      if (technicianError) {
+        console.error("Error creating technician profile:", technicianError)
+      }
     }
 
     return NextResponse.json(

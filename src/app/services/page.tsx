@@ -32,7 +32,7 @@ import {
   Thermometer
 } from "lucide-react"
 
-type ServiceStatus = "PENDING" | "ASSIGNED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED"
+import { ServiceStatus } from "@/types"
 
 interface ServiceRequest {
   id: string

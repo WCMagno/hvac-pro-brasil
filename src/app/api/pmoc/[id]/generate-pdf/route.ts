@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { db } from "@/lib/db"
+import { createClient } from "@/lib/supabase"
 
 export async function POST(
   request: NextRequest,
@@ -7,45 +7,65 @@ export async function POST(
 ) {
   try {
     const reportId = params.id
+    const supabase = createClient()
 
     // Fetch the PMOC report with all related data
-    const report = await db.pMOCReport.findUnique({
-      where: { id: reportId },
-      include: {
-        equipment: {
-          include: {
-            client: {
-              include: {
-                user: true
-              }
-            }
-          }
-        },
-        technician: {
-          include: {
-            user: true
-          }
-        },
-        service: true
-      }
-    })
+    const { data: report, error } = await supabase
+      .from('pmoc_reports')
+      .select(`
+        *,
+        building:buildings(
+          id,
+          name,
+          address,
+          client:clients(
+            id,
+            company_name,
+            user:users(
+              id,
+              name,
+              email,
+              phone
+            )
+          )
+        ),
+        technician:technicians(
+          id,
+          license_number,
+          specialty,
+          user:users(
+            id,
+            name,
+            email,
+            phone
+          )
+        )
+      `)
+      .eq('id', reportId)
+      .single()
 
-    if (!report) {
+    if (error || !report) {
       return NextResponse.json(
         { error: "Relatório PMOC não encontrado" },
         { status: 404 }
       )
     }
 
+    // Fetch PMOC images
+    const { data: images } = await supabase
+      .from('pmoc_images')
+      .select('*')
+      .eq('pmoc_id', reportId)
+
     // Generate PDF content (simplified version - in production, use a proper PDF library like jsPDF or Puppeteer)
-    const pdfContent = generatePDFContent(report)
+    const pdfContent = generatePDFContent(report, images || [])
 
     // For now, we'll return a simple text response
     // In a real implementation, you would generate an actual PDF file
     return new NextResponse(pdfContent, {
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="pmoc-${report.reportNumber}.pdf"`
+        'Content-Disposition': `attachment; filename="pmoc-${reportId}.pdf"`
       }
     })
 
@@ -58,50 +78,45 @@ export async function POST(
   }
 }
 
-function generatePDFContent(report: any): string {
+function generatePDFContent(report: any, images: any[]): string {
   // This is a simplified version - in production, use a proper PDF generation library
   const content = `
-RELATÓRIO PMOC - ${report.reportNumber}
+RELATÓRIO PMOC - ${report.id}
 ===================================
 
 Lei nº 13.589/2018 - Programa de Manutenção Preventiva Obrigatória
 
-DATA DO RELATÓRIO: ${new Date(report.generatedAt).toLocaleDateString('pt-BR')}
-DATA DA INSPEÇÃO: ${new Date(report.inspectionDate).toLocaleDateString('pt-BR')}
-PRÓXIMA INSPEÇÃO: ${new Date(report.nextInspection).toLocaleDateString('pt-BR')}
+DATA DO RELATÓRIO: ${new Date(report.created_at).toLocaleDateString('pt-BR')}
+DATA DA INSPEÇÃO: ${new Date(report.report_date).toLocaleDateString('pt-BR')}
+PRÓXIMA INSPEÇÃO: ${new Date(report.next_maintenance).toLocaleDateString('pt-BR')}
 
-STATUS DE CONFORMIDADE: ${report.complianceStatus}
+STATUS: ${report.status}
 
-DADOS DO EQUIPAMENTO:
-- Nome: ${report.equipment.name}
-- Tipo: ${report.equipment.type}
-- Marca: ${report.equipment.brand || 'Não informado'}
-- Modelo: ${report.equipment.model || 'Não informado'}
-- Número de Série: ${report.equipment.serialNumber || 'Não informado'}
-- Localização: ${report.equipment.location || 'Não informado'}
+DADOS DO PRÉDIO:
+- Nome: ${report.building.name}
+- Endereço: ${report.building.address}
 
 DADOS DO CLIENTE:
-- Nome: ${report.equipment.client.companyName || report.equipment.client.user.name}
-- Email: ${report.equipment.client.user.email}
-- Telefone: ${report.equipment.client.user.phone || 'Não informado'}
+- Empresa: ${report.building.client.company_name}
+- Nome: ${report.building.client.user.name}
+- Email: ${report.building.client.user.email}
+- Telefone: ${report.building.client.user.phone || 'Não informado'}
 
 RESPONSÁVEL TÉCNICO:
 - Nome: ${report.technician.user.name}
 - Email: ${report.technician.user.email}
 - Telefone: ${report.technician.user.phone || 'Não informado'}
+- Licença: ${report.technician.license_number}
+- Especialidade: ${report.technician.specialty}
 
-MEDIÇÕES REALIZADAS:
-${report.temperature ? `- Temperatura: ${report.temperature}°C` : ''}
-${report.pressure ? `- Pressão: ${report.pressure} PSI` : ''}
-${report.gasLevel ? `- Nível de Gás: ${report.gasLevel}%` : ''}
-
-CONSTATAÇÕES:
-${report.findings}
+OBSERVAÇÕES:
+${report.observations}
 
 RECOMENDAÇÕES:
 ${report.recommendations}
 
-${report.electricalReadings ? `LEITURAS ELÉTRICAS:\n${report.electricalReadings}` : ''}
+IMAGENS ANEXADAS: ${images.length} imagem(ns)
+${images.map((img, index) => `- Imagem ${index + 1}: ${img.description || 'Sem descrição'}`).join('\n')}
 
 ---
 Este relatório foi gerado automaticamente pelo sistema HVAC Pro

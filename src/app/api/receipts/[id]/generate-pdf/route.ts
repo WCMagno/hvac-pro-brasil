@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { db } from "@/lib/db"
+import { createClient } from "@/lib/supabase"
 
 export async function POST(
   request: NextRequest,
@@ -7,25 +7,38 @@ export async function POST(
 ) {
   try {
     const receiptId = params.id
+    const supabase = createClient()
 
     // Fetch the receipt with all related data
-    const receipt = await db.receipt.findUnique({
-      where: { id: receiptId },
-      include: {
-        service: {
-          include: {
-            client: {
-              include: {
-                user: true
-              }
-            }
-          }
-        },
-        user: true
-      }
-    })
+    const { data: receipt, error } = await supabase
+      .from('receipts')
+      .select(`
+        *,
+        financial:financial(
+          id,
+          description,
+          amount,
+          type,
+          status,
+          date,
+          client_id,
+          service_id,
+          client:clients(
+            id,
+            company_name,
+            user:users(
+              id,
+              name,
+              email,
+              phone
+            )
+          )
+        )
+      `)
+      .eq('id', receiptId)
+      .single()
 
-    if (!receipt) {
+    if (error || !receipt) {
       return NextResponse.json(
         { error: "Recibo não encontrado" },
         { status: 404 }
@@ -40,7 +53,7 @@ export async function POST(
     return new NextResponse(pdfContent, {
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `attachment; filename="recibo-${receipt.receiptNumber}.pdf"`
+        'Content-Disposition': `attachment; filename="recibo-${receipt.number}.pdf"`
       }
     })
 
@@ -56,32 +69,28 @@ export async function POST(
 function generatePDFContent(receipt: any): string {
   // This is a simplified version - in production, use a proper PDF generation library
   const content = `
-RECIBO DE PAGAMENTO - ${receipt.receiptNumber}
+RECIBO DE PAGAMENTO - ${receipt.number}
 ===========================================
 
-DATA DE EMISSÃO: ${new Date(receipt.issuedAt).toLocaleDateString('pt-BR')}
+DATA DE EMISSÃO: ${new Date(receipt.created_at).toLocaleDateString('pt-BR')}
 STATUS: ${receipt.status}
 
 RECEBEMOS DE:
-${receipt.service.client.companyName || receipt.service.client.user.name}
-${receipt.service.client.user.email}
-${receipt.service.client.user.phone ? `Telefone: ${receipt.service.client.user.phone}` : ''}
+${receipt.financial.client?.company_name || receipt.financial.client?.user.name}
+${receipt.financial.client?.user.email}
+${receipt.financial.client?.user.phone ? `Telefone: ${receipt.financial.client.user.phone}` : ''}
 
 A IMPORTÂNCIA DE:
 R$ ${receipt.amount.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
 
 REFERENTE A:
-${receipt.description}
+${receipt.financial.description}
 
-SERVIÇO:
-${receipt.service.title}
+TIPO:
+${receipt.financial.type === 'INCOME' ? 'Receita' : 'Despesa'}
 
-FORMA DE PAGAMENTO:
-${receipt.paymentMethod || 'Não informado'}
-
-EMITIDO POR:
-${receipt.user.name}
-${receipt.user.email}
+DATA DA TRANSAÇÃO:
+${new Date(receipt.financial.date).toLocaleDateString('pt-BR')}
 
 ---
 Este recibo foi gerado automaticamente pelo sistema HVAC Pro

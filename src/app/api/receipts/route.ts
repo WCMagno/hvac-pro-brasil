@@ -1,45 +1,47 @@
 import { NextRequest, NextResponse } from "next/server"
-import { db } from "@/lib/db"
+import { createClient } from "@/lib/supabase"
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    const serviceId = searchParams.get("serviceId") as string | null
-    const userId = searchParams.get("userId") as string | null
+    const financialId = searchParams.get("financialId") as string | null
     const status = searchParams.get("status") as string | null
 
-    const whereClause: any = {}
+    const supabase = createClient()
     
-    if (serviceId) {
-      whereClause.serviceId = serviceId
-    }
+    let query = supabase
+      .from('receipts')
+      .select(`
+        *,
+        financial:financial(
+          id,
+          description,
+          amount,
+          type,
+          status,
+          date,
+          client_id,
+          service_id
+        )
+      `)
     
-    if (userId) {
-      whereClause.userId = userId
+    if (financialId) {
+      query = query.eq('financial_id', financialId)
     }
     
     if (status) {
-      whereClause.status = status
+      query = query.eq('status', status)
     }
 
-    const receipts = await db.receipt.findMany({
-      where: whereClause,
-      include: {
-        service: {
-          include: {
-            client: {
-              include: {
-                user: true
-              }
-            }
-          }
-        },
-        user: true
-      },
-      orderBy: {
-        issuedAt: "desc"
-      }
-    })
+    const { data: receipts, error } = await query.order('created_at', { ascending: false })
+
+    if (error) {
+      console.error("Error fetching receipts:", error)
+      return NextResponse.json(
+        { error: "Erro ao buscar recibos" },
+        { status: 500 }
+      )
+    }
 
     return NextResponse.json(receipts)
   } catch (error) {
@@ -55,50 +57,51 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const {
-      serviceId,
-      userId,
+      financialId,
       amount,
-      description,
-      paymentMethod,
-      status
+      description
     } = body
 
     // Validate required fields
-    if (!serviceId || !userId || !amount || !description) {
+    if (!financialId || !amount || !description) {
       return NextResponse.json(
         { error: "Campos obrigatórios não preenchidos" },
         { status: 400 }
       )
     }
 
+    const supabase = createClient()
+
     // Generate receipt number
-    const receiptCount = await db.receipt.count()
+    const { data: lastReceipt } = await supabase
+      .from('receipts')
+      .select('number')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single()
+
+    const receiptCount = lastReceipt ? parseInt(lastReceipt.number.replace('REC-', '')) : 0
     const receiptNumber = `REC-${String(receiptCount + 1).padStart(6, '0')}`
 
     // Create receipt
-    const receipt = await db.receipt.create({
-      data: {
-        serviceId,
-        userId,
-        receiptNumber,
+    const { data: receipt, error } = await supabase
+      .from('receipts')
+      .insert({
+        financial_id: financialId,
+        number: receiptNumber,
         amount: parseFloat(amount),
-        description,
-        paymentMethod,
-        status: status || "ISSUED"
-      },
-      include: {
-        service: {
-          include: {
-            client: {
-              include: {
-                user: true
-              }
-            }
-          }
-        },
-        user: true
-      }
-    })
+        status: 'ISSUED'
+      })
+      .select()
+      .single()
+
+    if (error) {
+      console.error("Error creating receipt:", error)
+      return NextResponse.json(
+        { error: "Erro ao criar recibo" },
+        { status: 500 }
+      )
+    }
 
     return NextResponse.json(
       { message: "Recibo criado com sucesso", receipt },

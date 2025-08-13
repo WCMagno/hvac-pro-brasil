@@ -4,7 +4,7 @@ import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { useEffect } from "react"
 import { Loader2 } from "lucide-react"
-import { UserRole } from "@prisma/client"
+import { UserRole } from "@/types"
 
 interface ProtectedRouteProps {
   children: React.ReactNode

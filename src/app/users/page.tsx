@@ -28,7 +28,7 @@ import {
   Calendar
 } from "lucide-react"
 
-type UserRole = "ADMIN" | "TECHNICIAN" | "CLIENT"
+import { UserRole } from "@/types"
 
 interface User {
   id: string

@@ -1,104 +1,157 @@
-<<<<<<< HEAD
-# 🚀 Welcome to Z.ai Code Scaffold
+# 🌡️ HVAC Pro Brasil
 
-A modern, production-ready web application scaffold powered by cutting-edge technologies, designed to accelerate your development with [Z.ai](https://chat.z.ai)'s AI-powered coding assistance.
+Sistema completo de gerenciamento de manutenção HVAC e PMOC conforme Lei nº 13.589/2018, desenvolvido para profissionais do Brasil.
 
-## ✨ Technology Stack
-
-This scaffold provides a robust foundation built with:
+## ✨ Tecnologias Utilizadas
 
 ### 🎯 Core Framework
-- **⚡ Next.js 15** - The React framework for production with App Router
-- **📘 TypeScript 5** - Type-safe JavaScript for better developer experience
-- **🎨 Tailwind CSS 4** - Utility-first CSS framework for rapid UI development
-
-### 🧩 UI Components & Styling
-- **🧩 shadcn/ui** - High-quality, accessible components built on Radix UI
-- **🎯 Lucide React** - Beautiful & consistent icon library
-- **🌈 Framer Motion** - Production-ready motion library for React
-- **🎨 Next Themes** - Perfect dark mode in 2 lines of code
-
-### 📋 Forms & Validation
-- **🎣 React Hook Form** - Performant forms with easy validation
-- **✅ Zod** - TypeScript-first schema validation
-
-### 🔄 State Management & Data Fetching
-- **🐻 Zustand** - Simple, scalable state management
-- **🔄 TanStack Query** - Powerful data synchronization for React
-- **🌐 Axios** - Promise-based HTTP client
+- **⚡ Next.js 15** - Framework React com App Router
+- **📘 TypeScript 5** - Tipagem segura para melhor experiência de desenvolvimento
+- **🎨 Tailwind CSS 4** - Framework CSS utilitário para desenvolvimento rápido de UI
 
 ### 🗄️ Database & Backend
-- **🗄️ Prisma** - Next-generation Node.js and TypeScript ORM
-- **🔐 NextAuth.js** - Complete open-source authentication solution
+- **🔥 Supabase** - Plataforma de backend como serviço com PostgreSQL
+- **🔐 NextAuth.js** - Solução completa de autenticação
+- **🔒 bcryptjs** - Hashing de senhas seguro
+
+### 🧩 UI Components & Styling
+- **🧩 shadcn/ui** - Componentes de alta qualidade baseados em Radix UI
+- **🎯 Lucide React** - Biblioteca de ícones consistente
+- **🌈 Framer Motion** - Biblioteca de animações para React
+- **🎨 Next Themes** - Suporte perfeito para dark mode
+
+### 📋 Forms & Validation
+- **🎣 React Hook Form** - Formulários performáticos com validação fácil
+- **✅ Zod** - Validação de schema com TypeScript
+
+### 🔄 State Management & Data Fetching
+- **🐻 Zustand** - Gerenciamento de estado simples e escalável
+- **🔄 TanStack Query** - Sincronização de dados poderosa para React
+- **🌐 Axios** - Cliente HTTP baseado em Promises
 
 ### 🎨 Advanced UI Features
-- **📊 TanStack Table** - Headless UI for building tables and datagrids
-- **🖱️ DND Kit** - Modern drag and drop toolkit for React
-- **📊 Recharts** - Redefined chart library built with React and D3
-- **🖼️ Sharp** - High performance image processing
+- **📊 TanStack Table** - Headless UI para construir tabelas e datagrids
+- **🖱️ DND Kit** - Kit moderno de drag and drop para React
+- **📊 Recharts** - Biblioteca de gráficos construída com React e D3
+- **🖼️ Sharp** - Processamento de imagens de alta performance
 
-### 🌍 Internationalization & Utilities
-- **🌍 Next Intl** - Internationalization library for Next.js
-- **📅 Date-fns** - Modern JavaScript date utility library
-- **🪝 ReactUse** - Collection of essential React hooks for modern development
+### 🌍 Real-time Communication
+- **🔌 Socket.io** - Comunicação em tempo real bidirecional
 
-## 🎯 Why This Scaffold?
+## 🎯 Funcionalidades Principais
 
-- **🏎️ Fast Development** - Pre-configured tooling and best practices
-- **🎨 Beautiful UI** - Complete shadcn/ui component library with advanced interactions
-- **🔒 Type Safety** - Full TypeScript configuration with Zod validation
-- **📱 Responsive** - Mobile-first design principles with smooth animations
-- **🗄️ Database Ready** - Prisma ORM configured for rapid backend development
-- **🔐 Auth Included** - NextAuth.js for secure authentication flows
-- **📊 Data Visualization** - Charts, tables, and drag-and-drop functionality
-- **🌍 i18n Ready** - Multi-language support with Next Intl
-- **🚀 Production Ready** - Optimized build and deployment settings
-- **🤖 AI-Friendly** - Structured codebase perfect for AI assistance
+### 🔐 Sistema de Autenticação
+- Login seguro com JWT
+- Controle de acesso baseado em papéis (Admin, Técnico, Cliente)
+- Proteção de rotas com middleware
+- Registro de usuários com validação
 
-## 🚀 Quick Start
+### 👥 Gestão de Usuários
+- Cadastro de clientes, técnicos e administradores
+- Perfis específicos para cada tipo de usuário
+- Sistema de busca e filtragem
+- Interface intuitiva para gestão
 
+### 🔧 Gestão de Serviços
+- Cadastro de serviços de manutenção
+- Acompanhamento de status (Pendente, Em Andamento, Concluído, Cancelado)
+- Sistema de prioridades
+- Agendamento de serviços
+- Atribuição de técnicos
+
+### 📋 PMOC (Plano de Manutenção, Operação e Controle)
+- Relatórios de PMOC conforme legislação
+- Upload de fotos e documentos
+- Sistema de observações e recomendações
+- Controle de datas de manutenção
+
+### 💰 Gestão Financeira
+- Controle de receitas e despesas
+- Emissão de recibos
+- Acompanhamento de pagamentos
+- Relatórios financeiros
+
+### 📊 Dashboard & Relatórios
+- Dashboard interativo com gráficos
+- Relatórios detalhados
+- Exportação de dados
+- Análise de métricas
+
+## 🚀 Configuração Rápida
+
+### Pré-requisitos
+- Node.js 18+
+- Conta no Supabase
+
+### 1. Instalar Dependências
 ```bash
-# Install dependencies
 npm install
-
-# Start development server
-npm run dev
-
-# Build for production
-npm run build
-
-# Start production server
-npm start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to see your application running.
+### 2. Configurar Supabase
+1. Crie um projeto no [Supabase](https://supabase.com)
+2. Copie as credenciais do projeto
+3. Configure o arquivo `.env.local`:
+```bash
+# Supabase Configuration
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-here
 
-## 🤖 Powered by Z.ai
+# NextAuth Configuration
+NEXTAUTH_SECRET=your-nextauth-secret-here
+NEXTAUTH_URL=http://localhost:3000
+```
 
-This scaffold is optimized for use with [Z.ai](https://chat.z.ai) - your AI assistant for:
+### 3. Configurar Database
+Execute o schema SQL no Supabase Dashboard:
+- Abra o arquivo `supabase-schema.sql`
+- Copie e cole no SQL Editor do Supabase
+- Execute o script
 
-- **💻 Code Generation** - Generate components, pages, and features instantly
-- **🎨 UI Development** - Create beautiful interfaces with AI assistance  
-- **🔧 Bug Fixing** - Identify and resolve issues with intelligent suggestions
-- **📝 Documentation** - Auto-generate comprehensive documentation
-- **🚀 Optimization** - Performance improvements and best practices
+### 4. Iniciar Servidor
+```bash
+npm run dev
+```
 
-Ready to build something amazing? Start chatting with Z.ai at [chat.z.ai](https://chat.z.ai) and experience the future of AI-powered development!
+### 5. Criar Usuário Administrador
+```bash
+curl -X POST http://localhost:3000/api/create-admin -H "Content-Type: application/json"
+```
 
-## 📁 Project Structure
+### 6. Acessar o Sistema
+Abra [http://localhost:3000](http://localhost:3000)
+- **Email**: `admin@hvacpro.com.br`
+- **Senha**: `admin#1234`
+
+## 📁 Estrutura do Projeto
 
 ```
 src/
-├── app/                 # Next.js App Router pages
-├── components/          # Reusable React components
-│   └── ui/             # shadcn/ui components
-├── hooks/              # Custom React hooks
-└── lib/                # Utility functions and configurations
+├── app/                    # Next.js App Router pages
+│   ├── api/               # API routes
+│   ├── auth/              # Authentication pages
+│   ├── financial/         # Financial management
+│   ├── pmoc/              # PMOC management
+│   ├── services/          # Service management
+│   ├── users/             # User management
+│   └── layout.tsx         # Root layout
+├── components/             # Reusable React components
+│   ├── auth/              # Authentication components
+│   ├── layout/            # Layout components
+│   ├── ui/                # shadcn/ui components
+│   └── providers/         # Context providers
+├── hooks/                 # Custom React hooks
+├── lib/                   # Utility functions and configurations
+│   ├── auth/              # Authentication configuration
+│   ├── supabase.ts        # Supabase client configuration
+│   └── utils.ts           # Utility functions
+└── types/                 # TypeScript type definitions
+    ├── index.ts           # Local type definitions
+    └── next-auth.d.ts     # NextAuth type extensions
 ```
 
-## 🎨 Available Features & Components
-
-This scaffold includes a comprehensive set of modern web development tools:
+## 🎨 Componentes Disponíveis
 
 ### 🧩 UI Components (shadcn/ui)
 - **Layout**: Card, Separator, Aspect Ratio, Resizable Panels
@@ -106,44 +159,83 @@ This scaffold includes a comprehensive set of modern web development tools:
 - **Feedback**: Alert, Toast (Sonner), Progress, Skeleton
 - **Navigation**: Breadcrumb, Menubar, Navigation Menu, Pagination
 - **Overlay**: Dialog, Sheet, Popover, Tooltip, Hover Card
-- **Data Display**: Badge, Avatar, Calendar
+- **Data Display**: Badge, Avatar, Calendar, Table
 
-### 📊 Advanced Data Features
-- **Tables**: Powerful data tables with sorting, filtering, pagination (TanStack Table)
-- **Charts**: Beautiful visualizations with Recharts
-- **Forms**: Type-safe forms with React Hook Form + Zod validation
+### 📊 Recursos Avançados
+- **Tabelas**: Tabelas poderosas com ordenação, filtragem, paginação
+- **Gráficos**: Visualizações bonitas com Recharts
+- **Formulários**: Formulários type-safe com React Hook Form + Zod
+- **Upload de Imagens**: Sistema completo de upload com Supabase Storage
 
-### 🎨 Interactive Features
-- **Animations**: Smooth micro-interactions with Framer Motion
-- **Drag & Drop**: Modern drag-and-drop functionality with DND Kit
-- **Theme Switching**: Built-in dark/light mode support
+### 🎨 Recursos Interativos
+- **Animações**: Micro-interações suaves com Framer Motion
+- **Drag & Drop**: Funcionalidade moderna de arrastar e soltar
+- **Theme Switching**: Suporte integrado para modo claro/escuro
 
-### 🔐 Backend Integration
-- **Authentication**: Ready-to-use auth flows with NextAuth.js
-- **Database**: Type-safe database operations with Prisma
-- **API Client**: HTTP requests with Axios + TanStack Query
-- **State Management**: Simple and scalable with Zustand
+## 🔧 Scripts Disponíveis
 
-### 🌍 Production Features
-- **Internationalization**: Multi-language support with Next Intl
-- **Image Optimization**: Automatic image processing with Sharp
-- **Type Safety**: End-to-end TypeScript with Zod validation
-- **Essential Hooks**: 100+ useful React hooks with ReactUse for common patterns
+```bash
+# Desenvolvimento
+npm run dev          # Inicia servidor de desenvolvimento
+npm run build        # Build para produção
+npm run start        # Inicia servidor de produção
+npm run lint         # Executa ESLint
 
-## 🤝 Get Started with Z.ai
+# Database
+npm run db:setup     # Instruções para configurar o Supabase
+npm run db:seed      # Instruções para criar usuário admin
+npm run supabase:types # Gera tipos TypeScript do Supabase
+```
 
-1. **Clone this scaffold** to jumpstart your project
-2. **Visit [chat.z.ai](https://chat.z.ai)** to access your AI coding assistant
-3. **Start building** with intelligent code generation and assistance
-4. **Deploy with confidence** using the production-ready setup
+## 🌍 Variáveis de Ambiente
+
+```bash
+# Supabase Configuration
+NEXT_PUBLIC_SUPABASE_URL=URL do seu projeto Supabase
+NEXT_PUBLIC_SUPABASE_ANON_KEY=Chave anônima do Supabase
+SUPABASE_SERVICE_ROLE_KEY=Chave de serviço do Supabase
+
+# NextAuth Configuration
+NEXTAUTH_SECRET=Segredo do NextAuth
+NEXTAUTH_URL=URL do aplicativo
+```
+
+## 🔒 Segurança
+
+- Autenticação com JWT seguro
+- Hashing de senhas com bcryptjs
+- Proteção contra ataques CSRF
+- Validação de entrada de dados
+- Controle de acesso baseado em papéis
+- Middleware de proteção de rotas
+
+## 🚀 Deploy
+
+O projeto está pronto para deploy em plataformas como:
+- Vercel (recomendado)
+- Netlify
+- Railway
+- Digital Ocean App Platform
+
+## 🤝 Contribuição
+
+1. Faça um fork do projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
+3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4. Push para a branch (`git push origin feature/AmazingFeature`)
+5. Abra um Pull Request
+
+## 📄 Licença
+
+Este projeto está sob licença MIT - veja o arquivo [LICENSE](LICENSE) para detalhes.
+
+## 🙏 Agradecimentos
+
+- [Next.js](https://nextjs.org/) - Framework React
+- [Supabase](https://supabase.com/) - Backend as a Service
+- [shadcn/ui](https://ui.shadcn.com/) - Componentes UI
+- [Tailwind CSS](https://tailwindcss.com/) - Framework CSS
 
 ---
 
-Built with ❤️ for the developer community. Supercharged by [Z.ai](https://chat.z.ai) 🚀
-=======
-# hvac-pro-brasil
-Sistema de gerenciamento de manutenção HVAC para profissionais do Brasil
-git remote set-url origin https://WCMagno:SEU_TOKEN@github.com/WCMagno/hvac-pro-brasil.git
-git remote set-url origin git@github.com:WCMagno/hvac-pro-brasil.git
-git push -u origin main
->>>>>>> a61ed6f8bde20fd60c996c5cb9ccd1df96186739
+Desenvolvido com ❤️ para profissionais HVAC do Brasil. 🌡️
