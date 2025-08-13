@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import ImageUpload, { UploadedImage } from "@/components/ui/image-upload"
 import { useAuth } from "@/hooks/use-auth"
 import { 
   FileText, 
@@ -27,7 +28,8 @@ import {
   User,
   Building,
   FileDown,
-  MessageCircle
+  MessageCircle,
+  Image as ImageIcon
 } from "lucide-react"
 
 interface PMOCReport {
@@ -44,6 +46,13 @@ interface PMOCReport {
   gasLevel?: number
   electricalReadings?: string
   pdfUrl?: string
+  images?: {
+    id: string
+    url: string
+    filename: string
+    description?: string
+    uploadDate: string
+  }[]
   equipment: {
     id: string
     name: string
@@ -83,6 +92,8 @@ export default function PMOCPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState<string>("ALL")
   const [selectedReport, setSelectedReport] = useState<PMOCReport | null>(null)
+  const [reportImages, setReportImages] = useState<UploadedImage[]>([])
+  const [isEditingImages, setIsEditingImages] = useState(false)
 
   useEffect(() => {
     fetchReports()
@@ -99,6 +110,46 @@ export default function PMOCPage() {
       console.error("Error fetching PMOC reports:", error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleImagesChange = (images: UploadedImage[]) => {
+    setReportImages(images)
+  }
+
+  const handleSaveImages = async () => {
+    if (!selectedReport) return
+    
+    try {
+      const response = await fetch(`/api/pmoc/${selectedReport.id}/images`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ images: reportImages }),
+      })
+
+      if (response.ok) {
+        // Atualizar o relatório selecionado com as novas imagens
+        const updatedReport = {
+          ...selectedReport,
+          images: reportImages.map(img => ({
+            id: img.id,
+            url: img.url,
+            filename: img.filename,
+            uploadDate: img.uploadDate.toISOString()
+          }))
+        }
+        setSelectedReport(updatedReport)
+        setIsEditingImages(false)
+        
+        // Atualizar a lista de relatórios
+        setReports(prev => prev.map(r => 
+          r.id === selectedReport.id ? updatedReport : r
+        ))
+      }
+    } catch (error) {
+      console.error("Error saving images:", error)
     }
   }
 
@@ -403,7 +454,19 @@ export default function PMOCPage() {
                             <div className="flex items-center space-x-1">
                               <Dialog>
                                 <DialogTrigger asChild>
-                                  <Button variant="ghost" size="sm" onClick={() => setSelectedReport(report)}>
+                                  <Button variant="ghost" size="sm" onClick={() => {
+                                    setSelectedReport(report)
+                                    setReportImages(report.images?.map(img => ({
+                                      id: img.id,
+                                      url: img.url,
+                                      path: img.url,
+                                      filename: img.filename,
+                                      size: 0,
+                                      description: img.description,
+                                      uploadDate: new Date(img.uploadDate)
+                                    })) || [])
+                                    setIsEditingImages(false)
+                                  }}>
                                     <FileText className="h-4 w-4" />
                                   </Button>
                                 </DialogTrigger>
@@ -545,6 +608,77 @@ export default function PMOCPage() {
                                           </div>
                                         </div>
                                       )}
+
+                                      {/* Images Section */}
+                                      <div>
+                                        <div className="flex items-center justify-between mb-2">
+                                          <h4 className="font-medium">Imagens do Relatório</h4>
+                                          {!isEditingImages ? (
+                                            <Button 
+                                              variant="outline" 
+                                              size="sm"
+                                              onClick={() => setIsEditingImages(true)}
+                                            >
+                                              <ImageIcon className="mr-2 h-4 w-4" />
+                                              Gerenciar Imagens
+                                            </Button>
+                                          ) : (
+                                            <div className="flex gap-2">
+                                              <Button 
+                                                variant="outline" 
+                                                size="sm"
+                                                onClick={() => setIsEditingImages(false)}
+                                              >
+                                                Cancelar
+                                              </Button>
+                                              <Button 
+                                                size="sm"
+                                                onClick={handleSaveImages}
+                                              >
+                                                Salvar Imagens
+                                              </Button>
+                                            </div>
+                                          )}
+                                        </div>
+                                        
+                                        {isEditingImages ? (
+                                          <ImageUpload
+                                            onImagesChange={handleImagesChange}
+                                            images={reportImages}
+                                            maxImages={20}
+                                            folder={`pmoc-reports/${selectedReport.id}`}
+                                            title="Upload de Imagens do Relatório"
+                                            description="Adicione fotos do equipamento, medições e condições encontradas"
+                                          />
+                                        ) : (
+                                          <div className="bg-gray-50 p-4 rounded-lg">
+                                            {selectedReport.images && selectedReport.images.length > 0 ? (
+                                              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                                {selectedReport.images.map((image) => (
+                                                  <div key={image.id} className="relative group">
+                                                    <div className="aspect-square rounded-lg overflow-hidden border">
+                                                      <img
+                                                        src={image.url}
+                                                        alt={image.filename}
+                                                        className="w-full h-full object-cover"
+                                                      />
+                                                    </div>
+                                                    <div className="absolute bottom-0 left-0 right-0 bg-black/75 text-white p-1 rounded-b-lg">
+                                                      <p className="text-xs truncate">{image.filename}</p>
+                                                    </div>
+                                                  </div>
+                                                ))}
+                                              </div>
+                                            ) : (
+                                              <div className="text-center py-8 text-gray-500">
+                                                <ImageIcon className="h-12 w-12 mx-auto mb-2 text-gray-400" />
+                                                <p className="text-sm">Nenhuma imagem adicionada ao relatório</p>
+                                                <p className="text-xs mt-1">Clique em "Gerenciar Imagens" para adicionar fotos</p>
+                                              </div>
+                                            )}
+                                          </div>
+                                        )}
+                                      </div>
 
                                       {/* Action Buttons */}
                                       <div className="flex gap-2 pt-4 border-t">
