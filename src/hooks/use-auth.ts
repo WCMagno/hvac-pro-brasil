@@ -1,19 +1,18 @@
 "use client"
 
 import { useSession } from "next-auth/react"
-import { UserRole } from "@prisma/client"
 
 interface UseAuthReturn {
   user: {
     id: string
     email: string
     name?: string | null
-    role: UserRole
+    role: string
     image?: string | null
   } | null
   isLoading: boolean
   isAuthenticated: boolean
-  hasRole: (role: UserRole | UserRole[]) => boolean
+  hasRole: (role: string | string[]) => boolean
   isAdmin: boolean
   isTechnician: boolean
   isClient: boolean
@@ -26,7 +25,7 @@ export function useAuth(): UseAuthReturn {
   const isLoading = status === "loading"
   const isAuthenticated = status === "authenticated"
 
-  const hasRole = (role: UserRole | UserRole[]): boolean => {
+  const hasRole = (role: string | string[]): boolean => {
     if (!user) return false
     if (Array.isArray(role)) {
       return role.includes(user.role)
