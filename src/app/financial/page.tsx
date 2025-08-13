@@ -31,7 +31,8 @@ import {
   FileText,
   Edit
 } from "lucide-react"
-import { PaymentStatus } from "@prisma/client"
+
+type PaymentStatus = "PAID" | "PENDING" | "OVERDUE" | "CANCELLED"
 
 interface FinancialTransaction {
   id: string

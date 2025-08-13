@@ -1,62 +1,98 @@
 import { NextRequest, NextResponse } from "next/server"
-import { db } from "@/lib/db"
-import { ServiceStatus } from "@prisma/client"
+import { createClient } from "@/lib/supabase"
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    const status = searchParams.get("status") as ServiceStatus | null
+    const status = searchParams.get("status") as string | null
     const priority = searchParams.get("priority") as string | null
     const clientId = searchParams.get("clientId") as string | null
     const technicianId = searchParams.get("technicianId") as string | null
 
-    const whereClause: any = {}
+    const supabase = createClient()
     
+    let query = supabase
+      .from('service_requests')
+      .select(`
+        *,
+        client (
+          *,
+          user (*)
+        ),
+        equipment (*),
+        technician (
+          *,
+          user (*)
+        )
+      `)
+
+    // Apply filters
     if (status) {
-      whereClause.status = status
+      query = query.eq('status', status)
     }
     
     if (priority) {
-      whereClause.priority = priority
+      query = query.eq('priority', priority)
     }
     
     if (clientId) {
-      whereClause.clientId = clientId
+      query = query.eq('client_id', clientId)
     }
     
     if (technicianId) {
-      whereClause.assignments = {
-        some: {
-          technicianId: technicianId
-        }
-      }
+      query = query.eq('technician_id', technicianId)
     }
 
-    const services = await db.serviceRequest.findMany({
-      where: whereClause,
-      include: {
-        client: {
-          include: {
-            user: true
-          }
-        },
-        equipment: true,
-        assignments: {
-          include: {
-            technician: {
-              include: {
-                user: true
-              }
-            }
-          }
+    const { data: services, error } = await query.order('created_at', { ascending: false })
+
+    if (error) {
+      console.error("Error fetching services:", error)
+      return NextResponse.json(
+        { error: "Erro ao buscar serviços" },
+        { status: 500 }
+      )
+    }
+
+    // Transform data to match expected format
+    const transformedServices = services?.map(service => ({
+      id: service.id,
+      title: service.title,
+      description: service.description,
+      status: service.status,
+      priority: service.priority,
+      requestedDate: service.created_at,
+      scheduledDate: service.scheduled_date,
+      completedDate: service.completed_date,
+      estimatedCost: service.estimated_cost,
+      actualCost: service.actual_cost,
+      client: {
+        id: service.client.id,
+        companyName: service.client.company_name,
+        user: {
+          name: service.client.user.name,
+          email: service.client.user.email,
+          phone: service.client.user.phone
         }
       },
-      orderBy: {
-        requestedDate: "desc"
-      }
-    })
+      equipment: service.equipment ? {
+        id: service.equipment.id,
+        name: service.equipment.name,
+        type: service.equipment.type,
+        brand: service.equipment.brand,
+        model: service.equipment.model
+      } : null,
+      technician: service.technician ? {
+        id: service.technician.id,
+        user: {
+          name: service.technician.user.name,
+          email: service.technician.user.email,
+          phone: service.technician.user.phone
+        }
+      } : null,
+      assignments: [] // TODO: Implement assignments if needed
+    }))
 
-    return NextResponse.json(services)
+    return NextResponse.json(transformedServices || [])
   } catch (error) {
     console.error("Error fetching services:", error)
     return NextResponse.json(
@@ -87,40 +123,87 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    const supabase = createClient()
+
     // Create service request
-    const service = await db.serviceRequest.create({
-      data: {
-        clientId,
-        equipmentId,
+    const { data: service, error } = await supabase
+      .from('service_requests')
+      .insert([{
+        client_id: clientId,
+        equipment_id: equipmentId,
+        technician_id: null, // TODO: Add technician assignment logic
         title,
         description,
         priority: priority || "MEDIUM",
         status: "PENDING",
-        scheduledDate: scheduledDate ? new Date(scheduledDate) : null,
-        estimatedCost: estimatedCost || null,
-        createdBy: body.createdBy // This should come from the authenticated user
-      },
-      include: {
-        client: {
-          include: {
-            user: true
-          }
-        },
-        equipment: true,
-        assignments: {
-          include: {
-            technician: {
-              include: {
-                user: true
-              }
-            }
-          }
+        scheduled_date: scheduledDate || null,
+        estimated_cost: estimatedCost || null,
+        actual_cost: null,
+        completed_date: null
+      }])
+      .select(`
+        *,
+        client (
+          *,
+          user (*)
+        ),
+        equipment (*),
+        technician (
+          *,
+          user (*)
+        )
+      `)
+      .single()
+
+    if (error) {
+      console.error("Error creating service:", error)
+      return NextResponse.json(
+        { error: "Erro ao criar serviço" },
+        { status: 500 }
+      )
+    }
+
+    // Transform data to match expected format
+    const transformedService = {
+      id: service.id,
+      title: service.title,
+      description: service.description,
+      status: service.status,
+      priority: service.priority,
+      requestedDate: service.created_at,
+      scheduledDate: service.scheduled_date,
+      completedDate: service.completed_date,
+      estimatedCost: service.estimated_cost,
+      actualCost: service.actual_cost,
+      client: {
+        id: service.client.id,
+        companyName: service.client.company_name,
+        user: {
+          name: service.client.user.name,
+          email: service.client.user.email,
+          phone: service.client.user.phone
         }
-      }
-    })
+      },
+      equipment: service.equipment ? {
+        id: service.equipment.id,
+        name: service.equipment.name,
+        type: service.equipment.type,
+        brand: service.equipment.brand,
+        model: service.equipment.model
+      } : null,
+      technician: service.technician ? {
+        id: service.technician.id,
+        user: {
+          name: service.technician.user.name,
+          email: service.technician.user.email,
+          phone: service.technician.user.phone
+        }
+      } : null,
+      assignments: []
+    }
 
     return NextResponse.json(
-      { message: "Serviço criado com sucesso", service },
+      { message: "Serviço criado com sucesso", service: transformedService },
       { status: 201 }
     )
   } catch (error) {

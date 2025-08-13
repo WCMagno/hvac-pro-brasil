@@ -27,7 +27,8 @@ import {
   Phone,
   Calendar
 } from "lucide-react"
-import { UserRole } from "@prisma/client"
+
+type UserRole = "ADMIN" | "TECHNICIAN" | "CLIENT"
 
 interface User {
   id: string

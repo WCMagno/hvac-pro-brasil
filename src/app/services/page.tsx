@@ -31,7 +31,8 @@ import {
   Building,
   Thermometer
 } from "lucide-react"
-import { ServiceStatus } from "@prisma/client"
+
+type ServiceStatus = "PENDING" | "ASSIGNED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED"
 
 interface ServiceRequest {
   id: string
